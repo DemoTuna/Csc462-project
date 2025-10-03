@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 import os
 from pathlib import Path
 import pandas as pd
@@ -28,3 +28,9 @@ rf.fit(X_train, y_train)
 # Evaluating on the validation set
 y_pred = rf.predict(X_valid)
 print("Random Forest Accuracy is:", accuracy_score(y_valid, y_pred))
+
+# Compute confusion matrix
+cm = confusion_matrix(y_valid, y_pred)
+print("Confusion Matrix:")
+print(cm)
+
