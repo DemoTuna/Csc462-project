@@ -1,0 +1,62 @@
+!pip install lightgbm
+
+import pandas as pd
+import numpy as np
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings("ignore")
+
+# =========================
+# Load Data
+# =========================
+train_df = pd.read_csv("train.csv")
+val_df = pd.read_csv("val.csv")
+
+FEATURES = [c for c in train_df.columns if c != "label_move_col"]
+TARGET = "label_move_col"
+
+X_train = train_df[FEATURES].values
+y_train = train_df[TARGET].values
+
+X_val = val_df[FEATURES].values
+y_val = val_df[TARGET].values
+
+# =========================
+# Scale features
+# =========================
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_val = scaler.transform(X_val)
+
+# =========================
+# Best XGBoost Model
+# =========================
+xgb_best = XGBClassifier(
+    objective="multi:softprob",
+    eval_metric="mlogloss",
+    random_state=42,
+    tree_method="hist",
+    n_estimators=500,
+    learning_rate=0.07,
+    max_depth=10,
+    subsample=0.9,
+    colsample_bytree=0.9
+)
+
+xgb_best.fit(X_train, y_train)
+xgb_preds = xgb_best.predict(X_val)
+xgb_acc = accuracy_score(y_val, xgb_preds)
+
+print(f"\n Final Validation Accuracy: {xgb_acc:.4f}")
+
+# =========================
+# Confusion Matrix 
+# =========================
+cm = confusion_matrix(y_val, xgb_preds)
+print("\nConfusion Matrix:")
+for row in cm:
+    print(" ".join(f"{num:4d}" for num in row))
